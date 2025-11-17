@@ -98,13 +98,23 @@ long `+brick.name+`LastDebounceTime = 0;
 					digitalWrite(`+action.actuator.ref?.outputPin+`,`+action.value.value+`);`)
 	}
 
-	function compileTransition(transition: Transition, fileNode:CompositeGeneratorNode) {
-		fileNode.append(`
-		 			`+transition.sensor.ref?.name+`BounceGuard = millis() - `+transition.sensor.ref?.name+`LastDebounceTime > debounce;
-					if( digitalRead(`+transition.sensor.ref?.inputPin+`) == `+transition.value.value+` && `+transition.sensor.ref?.name+`BounceGuard) {
-						`+transition.sensor.ref?.name+`LastDebounceTime = millis();
-						currentState = `+transition.next.ref?.name+`;
-					}
-		`)
+	function compileTransition(transition: Transition, fileNode: CompositeGeneratorNode) {
+    	const sensor1 = transition.sensor.ref!;
+    	const sensor2 = (transition as any).sensor2?.ref;
+    	const value1 = transition.value.value;
+    	const value2 = (transition as any).value2?.value;
+    	const op = (transition as any).op;
+
+    	let condition = `digitalRead(${sensor1.inputPin}) == ${value1}`;
+    	if (sensor2) {
+        	const operator = op === 'and' ? '&&' : '||';
+        	condition += ` ${operator} digitalRead(${sensor2.inputPin}) == ${value2}`;
+    	}
+
+    	fileNode.append(`
+        	if(${condition}) {
+         	   currentState = ${transition.next.ref?.name};
+        }
+    	`);
 	}
 
