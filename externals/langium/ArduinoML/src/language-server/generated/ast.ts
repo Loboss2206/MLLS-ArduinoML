@@ -54,6 +54,34 @@ export function isApp(item: unknown): item is App {
     return reflection.isInstance(item, App);
 }
 
+export interface Condition extends AstNode {
+    readonly $container: Condition | ConditionWithNext;
+    readonly $type: 'Condition';
+    condition?: Condition
+    op?: 'and' | 'or'
+    sensor: Reference<Sensor>
+    value: Signal
+}
+
+export const Condition = 'Condition';
+
+export function isCondition(item: unknown): item is Condition {
+    return reflection.isInstance(item, Condition);
+}
+
+export interface ConditionWithNext extends AstNode {
+    readonly $container: Transition;
+    readonly $type: 'ConditionWithNext';
+    condition: Condition
+    next: Reference<State>
+}
+
+export const ConditionWithNext = 'ConditionWithNext';
+
+export function isConditionWithNext(item: unknown): item is ConditionWithNext {
+    return reflection.isInstance(item, ConditionWithNext);
+}
+
 export interface Note extends AstNode {
     readonly $container: Action;
     readonly $type: 'Note';
@@ -81,7 +109,7 @@ export function isSensor(item: unknown): item is Sensor {
 }
 
 export interface Signal extends AstNode {
-    readonly $container: Action | Transition;
+    readonly $container: Action | Condition;
     readonly $type: 'Signal';
     value: string
 }
@@ -109,12 +137,7 @@ export function isState(item: unknown): item is State {
 export interface Transition extends AstNode {
     readonly $container: State;
     readonly $type: 'Transition';
-    next: Reference<State>
-    op?: 'and' | 'or'
-    sensor: Reference<Sensor>
-    sensor2?: Reference<Sensor>
-    value: Signal
-    value2?: Signal
+    conditions: Array<ConditionWithNext>
 }
 
 export const Transition = 'Transition';
@@ -128,6 +151,8 @@ export interface ArduinoMlAstType {
     Actuator: Actuator
     App: App
     Brick: Brick
+    Condition: Condition
+    ConditionWithNext: ConditionWithNext
     Note: Note
     Sensor: Sensor
     Signal: Signal
@@ -138,7 +163,7 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'Brick', 'Note', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'Brick', 'Condition', 'ConditionWithNext', 'Note', 'Sensor', 'Signal', 'State', 'Transition'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -160,11 +185,10 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                 return Actuator;
             }
             case 'App:initial':
-            case 'Transition:next': {
+            case 'ConditionWithNext:next': {
                 return State;
             }
-            case 'Transition:sensor':
-            case 'Transition:sensor2': {
+            case 'Condition:sensor': {
                 return Sensor;
             }
             default: {
@@ -189,6 +213,14 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                     name: 'State',
                     mandatory: [
                         { name: 'actions', type: 'array' }
+                    ]
+                };
+            }
+            case 'Transition': {
+                return {
+                    name: 'Transition',
+                    mandatory: [
+                        { name: 'conditions', type: 'array' }
                     ]
                 };
             }

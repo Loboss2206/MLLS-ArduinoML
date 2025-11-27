@@ -7,123 +7,133 @@ enum STATE {off, chorus, verse};
 
 STATE currentState = off;
 
-bool buttonBounceGuard = false;
-long buttonLastDebounceTime = 0;
+bool button1BounceGuard = false;
+long button1LastDebounceTime = 0;
+
+            
+
+bool button2BounceGuard = false;
+long button2LastDebounceTime = 0;
 
             
 
 	void setup(){
-		pinMode(11, OUTPUT); // buzzer [Actuator]
-		pinMode(12, INPUT); // button [Sensor]
+		pinMode(12, OUTPUT); // buzzer [Actuator]
+		pinMode(9, INPUT); // button1 [Sensor]
+		pinMode(10, INPUT); // button2 [Sensor]
 	}
 	void loop() {
 			switch(currentState){
 
-				case off:digitalWrite(11, LOW);
-        	if(digitalRead(12) == HIGH) {
-         	   currentState = verse;
-        }
-    	
+				case off:digitalWrite(12, LOW);
+            if (digitalRead(9) == HIGH) {
+                currentState = chorus;
+            }
+        
+            if (digitalRead(10) == HIGH) {
+                currentState = verse;
+            }
+        
 				break;
 				case chorus:
-				tone(11, 262, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 262, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 262, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 330, 500);
-				delay(650);
-				noTone(11);
-			
-				tone(11, 294, 500);
-				delay(650);
-				noTone(11);
-			
-				tone(11, 262, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 330, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 262, 500);
-				delay(650);
-				noTone(11);
-			
-        	if(digitalRead(12) == LOW) {
-         	   currentState = off;
-        }
-    	
+			tone(12, 262, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 262, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 262, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 330, 500);
+			delay(650);
+			noTone(12);
+		
+			tone(12, 294, 500);
+			delay(650);
+			noTone(12);
+		
+			tone(12, 262, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 330, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 262, 500);
+			delay(650);
+			noTone(12);
+		
+            if (digitalRead(9) == LOW || digitalRead(9) == HIGH) {
+                currentState = off;
+            }
+        
 				break;
 				case verse:
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 220, 500);
-				delay(650);
-				noTone(11);
-			
-				tone(11, 220, 500);
-				delay(650);
-				noTone(11);
-			
-				tone(11, 294, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 262, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 247, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 220, 250);
-				delay(325);
-				noTone(11);
-			
-				tone(11, 196, 500);
-				delay(650);
-				noTone(11);
-			
-        	if(digitalRead(12) == LOW) {
-         	   currentState = off;
-        }
-    	
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 220, 500);
+			delay(650);
+			noTone(12);
+		
+			tone(12, 220, 500);
+			delay(650);
+			noTone(12);
+		
+			tone(12, 294, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 262, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 247, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 220, 250);
+			delay(325);
+			noTone(12);
+		
+			tone(12, 196, 500);
+			delay(650);
+			noTone(12);
+		
+            if (digitalRead(10) == LOW || digitalRead(10) == HIGH) {
+                currentState = off;
+            }
+        
 				break;
 		}
 	}

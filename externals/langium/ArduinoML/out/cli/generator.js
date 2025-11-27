@@ -87,32 +87,38 @@ function compileAction(action, fileNode) {
         const note = action.value;
         const duration = Math.round(1000 / note.duration);
         fileNode.append(`
-				tone(${(_a = action.actuator.ref) === null || _a === void 0 ? void 0 : _a.outputPin}, ${pitchToFrequency(note.pitch)}, ${duration});
-				delay(${duration * 1.30});
-				noTone(${(_b = action.actuator.ref) === null || _b === void 0 ? void 0 : _b.outputPin});
-			`);
+			tone(${(_a = action.actuator.ref) === null || _a === void 0 ? void 0 : _a.outputPin}, ${pitchToFrequency(note.pitch)}, ${duration});
+			delay(${duration * 1.30});
+			noTone(${(_b = action.actuator.ref) === null || _b === void 0 ? void 0 : _b.outputPin});
+		`);
     }
     else {
         fileNode.append(`digitalWrite(${(_c = action.actuator.ref) === null || _c === void 0 ? void 0 : _c.outputPin}, ${action.value.value});`);
     }
 }
-function compileTransition(transition, fileNode) {
-    var _a, _b, _c;
-    const sensor1 = transition.sensor.ref;
-    const sensor2 = (_a = transition.sensor2) === null || _a === void 0 ? void 0 : _a.ref;
-    const value1 = transition.value.value;
-    const value2 = (_b = transition.value2) === null || _b === void 0 ? void 0 : _b.value;
-    const op = transition.op;
-    let condition = `digitalRead(${sensor1.inputPin}) == ${value1}`;
-    if (sensor2) {
-        const operator = op === 'and' ? '&&' : '||';
-        condition += ` ${operator} digitalRead(${sensor2.inputPin}) == ${value2}`;
+function compileCondition(cond) {
+    const sensor = cond.sensor.ref;
+    const value = cond.value.value;
+    let code = `digitalRead(${sensor.inputPin}) == ${value}`;
+    if (cond.op && cond.condition) {
+        const op = cond.op === 'and' ? '&&' : '||';
+        const right = compileCondition(cond.condition);
+        code = `${code} ${op} ${right}`;
     }
-    fileNode.append(`
-        	if(${condition}) {
-         	   currentState = ${(_c = transition.next.ref) === null || _c === void 0 ? void 0 : _c.name};
-        }
-    	`);
+    return code;
+}
+function compileTransition(transition, fileNode) {
+    for (const c of transition.conditions) {
+        if (!c)
+            continue;
+        const conditionCode = compileCondition(c.condition);
+        const nextState = c.next.ref.name;
+        fileNode.append(`
+            if (${conditionCode}) {
+                currentState = ${nextState};
+            }
+        `);
+    }
 }
 /* Music notes */
 function pitchToFrequency(pitch) {
