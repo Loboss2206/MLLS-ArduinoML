@@ -1,26 +1,16 @@
-app DualCheckAlarm initial state ready {
+app DualCheckAlarm initial state off {
     bricks
         Actuator buzzer : 11
-        Actuator led : 12
-        Sensor button : 8
+        Sensor button1 : 8
+        Sensor button2 : 9
 
     states
-
-        ready {
+        off {
             buzzer <= LOW
-            led <= LOW
-            button is HIGH => noise
+            button1 is HIGH and button2 is HIGH => on
         }
-
-        noise {
+        on {
             buzzer <= HIGH
-            led <= LOW
-            button is HIGH => light
-        }
-
-        light {
-            buzzer <= LOW
-            led <= HIGH
-            button is HIGH => ready
+            button1 is LOW or button2 is LOW => off
         }
 }

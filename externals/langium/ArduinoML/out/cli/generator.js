@@ -82,18 +82,52 @@ function compileState(state, fileNode) {
 				break;`);
 }
 function compileAction(action, fileNode) {
-    var _a;
-    fileNode.append(`
-					digitalWrite(` + ((_a = action.actuator.ref) === null || _a === void 0 ? void 0 : _a.outputPin) + `,` + action.value.value + `);`);
+    var _a, _b, _c;
+    if ('pitch' in action.value) {
+        const note = action.value;
+        const duration = Math.round(1000 / note.duration);
+        fileNode.append(`
+				tone(${(_a = action.actuator.ref) === null || _a === void 0 ? void 0 : _a.outputPin}, ${pitchToFrequency(note.pitch)}, ${duration});
+				delay(${duration * 1.30});
+				noTone(${(_b = action.actuator.ref) === null || _b === void 0 ? void 0 : _b.outputPin});
+			`);
+    }
+    else {
+        fileNode.append(`digitalWrite(${(_c = action.actuator.ref) === null || _c === void 0 ? void 0 : _c.outputPin}, ${action.value.value});`);
+    }
 }
 function compileTransition(transition, fileNode) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c;
+    const sensor1 = transition.sensor.ref;
+    const sensor2 = (_a = transition.sensor2) === null || _a === void 0 ? void 0 : _a.ref;
+    const value1 = transition.value.value;
+    const value2 = (_b = transition.value2) === null || _b === void 0 ? void 0 : _b.value;
+    const op = transition.op;
+    let condition = `digitalRead(${sensor1.inputPin}) == ${value1}`;
+    if (sensor2) {
+        const operator = op === 'and' ? '&&' : '||';
+        condition += ` ${operator} digitalRead(${sensor2.inputPin}) == ${value2}`;
+    }
     fileNode.append(`
-		 			` + ((_a = transition.sensor.ref) === null || _a === void 0 ? void 0 : _a.name) + `BounceGuard = millis() - ` + ((_b = transition.sensor.ref) === null || _b === void 0 ? void 0 : _b.name) + `LastDebounceTime > debounce;
-					if( digitalRead(` + ((_c = transition.sensor.ref) === null || _c === void 0 ? void 0 : _c.inputPin) + `) == ` + transition.value.value + ` && ` + ((_d = transition.sensor.ref) === null || _d === void 0 ? void 0 : _d.name) + `BounceGuard) {
-						` + ((_e = transition.sensor.ref) === null || _e === void 0 ? void 0 : _e.name) + `LastDebounceTime = millis();
-						currentState = ` + ((_f = transition.next.ref) === null || _f === void 0 ? void 0 : _f.name) + `;
-					}
-		`);
+        	if(${condition}) {
+         	   currentState = ${(_c = transition.next.ref) === null || _c === void 0 ? void 0 : _c.name};
+        }
+    	`);
+}
+/* Music notes */
+function pitchToFrequency(pitch) {
+    const noteBase = { 'C': -9, 'D': -7, 'E': -5, 'F': -4, 'G': -2, 'A': 0, 'B': 2 };
+    const match = pitch.match(/^([A-G])([#b]?)([0-8]?)$/);
+    if (!match)
+        return 440;
+    let [, base, accidental, octaveStr] = match;
+    let octave = octaveStr ? parseInt(octaveStr) : 4;
+    let n = noteBase[base];
+    if (accidental === '#')
+        n += 1;
+    else if (accidental === 'b')
+        n -= 1;
+    n += (octave - 4) * 12;
+    return Math.round(440 * Math.pow(2, n / 12));
 }
 //# sourceMappingURL=generator.js.map

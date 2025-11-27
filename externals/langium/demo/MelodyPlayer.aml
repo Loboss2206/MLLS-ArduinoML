@@ -1,0 +1,44 @@
+app MelodyPlayer initial state off {
+    bricks
+        Actuator buzzer : 11
+        Sensor button : 12
+
+    states
+
+        off {
+            buzzer <= LOW
+            button is HIGH => verse
+        }
+
+        chorus {
+            buzzer <= NOTE(C4, 4)
+            buzzer <= NOTE(C4, 4)
+            buzzer <= NOTE(C4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(E4, 2)
+            buzzer <= NOTE(D4, 2)
+            buzzer <= NOTE(C4, 4)
+            buzzer <= NOTE(E4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(C4, 2)
+
+            button is LOW => off
+        }
+
+        verse {
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(A3, 2)
+            buzzer <= NOTE(A3, 2)
+            buzzer <= NOTE(D4, 4)
+            buzzer <= NOTE(C4, 4)
+            buzzer <= NOTE(B3, 4)
+            buzzer <= NOTE(A3, 4)
+            buzzer <= NOTE(G3, 2)
+            
+            button is LOW => off
+        }
+}

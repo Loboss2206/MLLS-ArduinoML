@@ -32,7 +32,7 @@ State :
 
 
 Action :
-	actuator=[Actuator:ID] '<=' value=Signal;
+	actuator=[Actuator:ID] '<=' value=(Signal | Note);
 
 Transition:
     sensor=[Sensor:ID] 'is' value=Signal
@@ -41,8 +41,13 @@ Transition:
 
 Signal:
     value=(HIGH | LOW);
+
+Note:
+    'NOTE' '(' pitch=PITCH ',' duration=INT ')';
+
 terminal HIGH : 'HIGH';
 terminal LOW : 'LOW';
+terminal PITCH: /[A-G](b|#)?[0-8]/;
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

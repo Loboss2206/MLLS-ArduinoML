@@ -18,7 +18,7 @@ export interface Action extends AstNode {
     readonly $container: State;
     readonly $type: 'Action';
     actuator: Reference<Actuator>
-    value: Signal
+    value: Note | Signal
 }
 
 export const Action = 'Action';
@@ -52,6 +52,19 @@ export const App = 'App';
 
 export function isApp(item: unknown): item is App {
     return reflection.isInstance(item, App);
+}
+
+export interface Note extends AstNode {
+    readonly $container: Action;
+    readonly $type: 'Note';
+    duration: number
+    pitch: string
+}
+
+export const Note = 'Note';
+
+export function isNote(item: unknown): item is Note {
+    return reflection.isInstance(item, Note);
 }
 
 export interface Sensor extends AstNode {
@@ -97,8 +110,11 @@ export interface Transition extends AstNode {
     readonly $container: State;
     readonly $type: 'Transition';
     next: Reference<State>
+    op?: 'and' | 'or'
     sensor: Reference<Sensor>
+    sensor2?: Reference<Sensor>
     value: Signal
+    value2?: Signal
 }
 
 export const Transition = 'Transition';
@@ -112,6 +128,7 @@ export interface ArduinoMlAstType {
     Actuator: Actuator
     App: App
     Brick: Brick
+    Note: Note
     Sensor: Sensor
     Signal: Signal
     State: State
@@ -121,7 +138,7 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'Brick', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'Brick', 'Note', 'Sensor', 'Signal', 'State', 'Transition'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -146,7 +163,8 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
             case 'Transition:next': {
                 return State;
             }
-            case 'Transition:sensor': {
+            case 'Transition:sensor':
+            case 'Transition:sensor2': {
                 return Sensor;
             }
             default: {
