@@ -1,16 +1,14 @@
 package main.groovy.groovuinoml.dsl
 
-import io.github.mosser.arduinoml.kernel.behavioral.TimeUnit
 import io.github.mosser.arduinoml.kernel.behavioral.Action
+import io.github.mosser.arduinoml.kernel.behavioral.ICondition
 import io.github.mosser.arduinoml.kernel.behavioral.State
+import io.github.mosser.arduinoml.kernel.behavioral.Transition
 import io.github.mosser.arduinoml.kernel.structural.Actuator
-import io.github.mosser.arduinoml.kernel.structural.Sensor
 import io.github.mosser.arduinoml.kernel.structural.SIGNAL
+import io.github.mosser.arduinoml.kernel.structural.Sensor
 
 abstract class GroovuinoMLBasescript extends Script {
-//	public static Number getDuration(Number number, TimeUnit unit) throws IOException {
-//		return number * unit.inMillis;
-//	}
 
 	// sensor "name" pin n
 	def sensor(String name) {
@@ -47,25 +45,61 @@ abstract class GroovuinoMLBasescript extends Script {
 	}
 	
 	// from state1 to state2 when sensor becomes signal
-	def from(state1) {
-		[to: { state2 -> 
-			[when: { sensor ->
-				[becomes: { signal -> 
-					((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createTransition(
-						state1 instanceof String ? (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state1) : (State)state1, 
-						state2 instanceof String ? (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state2) : (State)state2, 
-						sensor instanceof String ? (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(sensor) : (Sensor)sensor, 
-						signal instanceof String ? (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signal) : (SIGNAL)signal)
-				}]
-			},
-			after: { delay ->
-				((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createTransition(
-						state1 instanceof String ? (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state1) : (State)state1,
-						state2 instanceof String ? (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state2) : (State)state2,
-						delay)
-			}]
-		}]
-	}
+	def from(String state1Name) {
+        [to: { String state2Name ->
+            [when: { String sensorName ->
+                [becomes: { String signalName ->
+                    State s1 = (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state1Name)
+                    State s2 = (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state2Name)
+                    Sensor sensor = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(sensorName)
+                    SIGNAL signal = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signalName)
+
+                    ICondition condition = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(sensor, signal)
+                    ((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createTransition(s1, s2, condition)
+                    
+                    Transition t = s1.getTransitions().get(s1.getTransitions().size()-1)
+
+                    def conditionBuilder
+                    conditionBuilder = {
+                        [
+                            and: { String nextSensor ->
+                                [becomes: { String nextSignal ->
+                                    Sensor ns = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSensor)
+                                    SIGNAL nsig = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSignal)
+                                    ICondition right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(ns, nsig)
+                                    
+                                    ICondition current = t.getCondition()
+                                    ICondition newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createOperation("AND", current, right)
+                                    t.setCondition(newCond)
+                                    
+                                    return conditionBuilder()
+                                }]
+                            },
+                            or: { String nextSensor ->
+                                [becomes: { String nextSignal ->
+                                    Sensor ns = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSensor)
+                                    SIGNAL nsig = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSignal)
+                                    ICondition right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(ns, nsig)
+
+                                    ICondition current = t.getCondition()
+                                    ICondition newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createOperation("OR", current, right)
+                                    t.setCondition(newCond)
+
+                                    return conditionBuilder()
+                                }]
+                            }
+                        ]
+                    }
+                    return conditionBuilder()
+                }]
+            },
+            after: { delay ->
+                State s1 = (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state1Name)
+                State s2 = (State)((GroovuinoMLBinding)this.getBinding()).getVariable(state2Name)
+                ((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createTransition(s1, s2, delay)
+            }]
+        }]
+    }
 	
 	// export name
 	def export(String name) {

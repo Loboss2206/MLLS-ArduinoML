@@ -4,11 +4,15 @@ import io.github.mosser.arduinoml.kernel.generator.Visitor;
 import io.github.mosser.arduinoml.kernel.structural.SIGNAL;
 import io.github.mosser.arduinoml.kernel.structural.Sensor;
 
-public class SignalTransition extends Transition {
+public class Comparison implements ICondition {
 
     private Sensor sensor;
     private SIGNAL value;
 
+    public Comparison(Sensor sensor, SIGNAL value) {
+        this.sensor = sensor;
+        this.value = value;
+    }
 
     public Sensor getSensor() {
         return sensor;

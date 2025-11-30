@@ -31,7 +31,6 @@ public class GroovuinoMLModel {
 		sensor.setPin(pinNumber);
 		this.bricks.add(sensor);
 		this.binding.setVariable(name, sensor);
-//		System.out.println("> sensor " + name + " on pin " + pinNumber);
 	}
 	
 	public void createActuator(String name, Integer pinNumber) {
@@ -50,19 +49,26 @@ public class GroovuinoMLModel {
 		this.binding.setVariable(name, state);
 	}
 	
-	public void createTransition(State from, State to, Sensor sensor, SIGNAL value) {
-		SignalTransition transition = new SignalTransition();
+	public ICondition createComparison(Sensor sensor, SIGNAL value) {
+		return new Comparison(sensor, value);
+	}
+	
+	public ICondition createOperation(String operator, ICondition left, ICondition right) {
+		return new Operation(Operator.valueOf(operator.toUpperCase()), left, right);
+	}
+
+	public void createTransition(State from, State to, ICondition condition) {
+		Transition transition = new Transition();
 		transition.setNext(to);
-		transition.setSensor(sensor);
-		transition.setValue(value);
-		from.setTransition(transition);
+		transition.setCondition(condition);
+		from.addTransition(transition);
 	}
 
 	public void createTransition(State from, State to, int delay) {
 		TimeTransition transition = new TimeTransition();
 		transition.setNext(to);
 		transition.setDelay(delay);
-		from.setTransition(transition);
+		from.addTransition(transition);
 	}
 	
 	public void setInitialState(State state) {

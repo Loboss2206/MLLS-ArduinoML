@@ -4,6 +4,8 @@ import io.github.mosser.arduinoml.kernel.App;
 import io.github.mosser.arduinoml.kernel.behavioral.*;
 import io.github.mosser.arduinoml.kernel.structural.*;
 
+import java.util.List;
+
 /**
  * Quick and dirty visitor to support the generation of Wiring code
  */
@@ -97,32 +99,30 @@ public class ToWiring extends Visitor<StringBuffer> {
 				action.accept(this);
 			}
 
-			if (state.getTransition() != null) {
-				state.getTransition().accept(this);
-				w("\t\tbreak;\n");
-			}
-			return;
-		}
+            if (state.getTransitions() != null) {
+                for(Transition t : state.getTransitions()) {
+                    t.accept(this);
+                }
+            }
+            w("\t\tbreak;\n");
+            return;
+        }
+    }
 
-	}
-
-	@Override
-	public void visit(SignalTransition transition) {
-		if(context.get("pass") == PASS.ONE) {
-			return;
-		}
-		if(context.get("pass") == PASS.TWO) {
-			String sensorName = transition.getSensor().getName();
-			w(String.format("\t\t\t%sBounceGuard = millis() - %sLastDebounceTime > debounce;\n",
-					sensorName, sensorName));
-			w(String.format("\t\t\tif( digitalRead(%d) == %s && %sBounceGuard) {\n",
-					transition.getSensor().getPin(), transition.getValue(), sensorName));
-			w(String.format("\t\t\t\t%sLastDebounceTime = millis();\n", sensorName));
-			w("\t\t\t\tcurrentState = " + transition.getNext().getName() + ";\n");
-			w("\t\t\t}\n");
-			return;
-		}
-	}
+    @Override
+    public void visit(Transition transition) {
+        if(context.get("pass") == PASS.ONE) {
+            return;
+        }
+        if(context.get("pass") == PASS.TWO) {
+            w("\t\t\tif( ");
+            transition.getCondition().accept(this);
+            w(" ) {\n");
+            w("\t\t\t\tcurrentState = " + transition.getNext().getName() + ";\n");
+            w("\t\t\t}\n");
+            return;
+        }
+    }
 
 	@Override
 	public void visit(TimeTransition transition) {
@@ -148,5 +148,37 @@ public class ToWiring extends Visitor<StringBuffer> {
 			return;
 		}
 	}
+
+    @Override
+    public void visit(Comparison comparison) {
+        if(context.get("pass") == PASS.ONE) {
+            return;
+        }
+        if(context.get("pass") == PASS.TWO) {
+            Sensor sensor = comparison.getSensor();
+            w(String.format("(digitalRead(%d) == %s && %sBounceGuard)", 
+                sensor.getPin(), comparison.getValue(), sensor.getName()));
+            return;
+        }
+    }
+
+    @Override
+    public void visit(Operation operation) {
+        if(context.get("pass") == PASS.ONE) {
+            return;
+        }
+        if(context.get("pass") == PASS.TWO) {
+            w("(");
+            List<ICondition> conditions = operation.getConditions();
+            for(int i=0; i<conditions.size(); i++) {
+                conditions.get(i).accept(this);
+                if(i < conditions.size() - 1) {
+                    w(operation.getOperator() == Operator.AND ? " && " : " || ");
+                }
+            }
+            w(")");
+            return;
+        }
+    }
 
 }
