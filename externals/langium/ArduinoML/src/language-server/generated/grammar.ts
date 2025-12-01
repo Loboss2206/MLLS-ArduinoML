@@ -421,7 +421,7 @@ export const ArduinoMlGrammar = (): Grammar => loadedArduinoMlGrammar ?? (loaded
     },
     {
       "$type": "ParserRule",
-      "name": "Comparison",
+      "name": "Predicate",
       "definition": {
         "$type": "Group",
         "elements": [
@@ -471,7 +471,7 @@ export const ArduinoMlGrammar = (): Grammar => loadedArduinoMlGrammar ?? (loaded
     },
     {
       "$type": "ParserRule",
-      "name": "Operator",
+      "name": "BinaryExpression",
       "definition": {
         "$type": "Group",
         "elements": [
@@ -516,7 +516,7 @@ export const ArduinoMlGrammar = (): Grammar => loadedArduinoMlGrammar ?? (loaded
     },
     {
       "$type": "ParserRule",
-      "name": "Condition",
+      "name": "BooleanExpression",
       "definition": {
         "$type": "Assignment",
         "feature": "expression",

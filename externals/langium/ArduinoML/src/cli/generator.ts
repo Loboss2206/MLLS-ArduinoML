@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { CompositeGeneratorNode, NL, toString } from 'langium';
 import path from 'path';
-import { Action, Actuator, App, Condition, Comparison, Note, Sensor, Signal, State, Transition } from '../language-server/generated/ast';
+import { Action, Actuator, App, BooleanExpression, Note, Predicate, Sensor, Signal, State, Transition } from '../language-server/generated/ast';
 import { extractDestinationAndName } from './cli-util';
 
 
@@ -109,25 +109,25 @@ function compileAction(action: Action, fileNode: CompositeGeneratorNode) {
 	}
 }
 
-function compileComparison(cmp: Comparison): string {
+function compilePredicate(cmp: Predicate): string {
 	const sensor = cmp.sensor.ref!;
 	return `digitalRead(${sensor.inputPin}) == ${cmp.value.value}`;
 }
 
-function buildConditionExpression(cond: Condition): string {
+function compileBooleanExpression(cond: BooleanExpression): string {
 	let leftCond = cond;
-	while (leftCond.expression.$type === 'Operator') {
+	while (leftCond.expression.$type === 'BinaryExpression') {
 		leftCond = leftCond.expression.condition;
 	}
 
-	let expr = compileComparison(leftCond.expression);
+	let expr = compilePredicate(leftCond.expression);
 
-	function testForOperator(c: Condition): string {
-		if (c.expression.$type === 'Operator') {
+	function testForOperator(c: BooleanExpression): string {
+		if (c.expression.$type === 'BinaryExpression') {
 			const op = c.expression.op === 'and' ? '&&' : '||';
 			return `${op} ${testForOperator(c.expression.condition)}`;
 		}
-		return compileComparison(c.expression);
+		return compilePredicate(c.expression);
 	}
 
 	const suffix = testForOperator(cond);
@@ -137,7 +137,7 @@ function buildConditionExpression(cond: Condition): string {
 }
 
 function compileTransition(t: Transition, fileNode: CompositeGeneratorNode) {
-	const conditionCode = buildConditionExpression(t.condition);
+	const conditionCode = compileBooleanExpression(t.condition);
 	const next = t.next.ref!.name;
 
 	fileNode.append(`
