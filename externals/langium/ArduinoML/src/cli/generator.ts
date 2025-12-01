@@ -78,20 +78,21 @@ function compileSensor(sensor: Sensor, fileNode: CompositeGeneratorNode) {
 		pinMode(`+ sensor.inputPin + `, INPUT); // ` + sensor.name + ` [Sensor]`)
 }
 
-
 function compileState(state: State, fileNode: CompositeGeneratorNode) {
 	fileNode.append(`
-				case `+ state.name + `:`)
-	for (const action of state.actions) {
-		compileAction(action, fileNode)
-	}
-	if (state.transition !== null) {
-		compileTransition(state.transition, fileNode)
-	}
-	fileNode.append(`
-				break;`)
-}
+                case ${state.name}:`);
 
+	for (const action of state.actions) {
+		compileAction(action, fileNode);
+	}
+
+	for (const tr of state.transition) {
+		compileTransition(tr, fileNode);
+	}
+
+	fileNode.append(`
+                break;`);
+}
 
 function compileAction(action: Action, fileNode: CompositeGeneratorNode) {
 	if ('pitch' in action.value) {
@@ -108,38 +109,42 @@ function compileAction(action: Action, fileNode: CompositeGeneratorNode) {
 	}
 }
 
-
 function compileComparison(cmp: Comparison): string {
 	const sensor = cmp.sensor.ref!;
-	const value = cmp.value.value;
-
-	return `digitalRead(${sensor.inputPin}) == ${value}`;
+	return `digitalRead(${sensor.inputPin}) == ${cmp.value.value}`;
 }
 
-function compileCondition(cond: Condition): string {
-	let code = compileComparison(cond.left);
-
-	for (let i = 0; i < cond.ops.length; i++) {
-		const op = cond.ops[i].op === 'and' ? '&&' : '||';
-		const right = compileComparison(cond.rights[i]);
-		code = `(${code} ${op} ${right})`;
+function buildConditionExpression(cond: Condition): string {
+	let leftCond = cond;
+	while (leftCond.expression.$type === 'Operator') {
+		leftCond = leftCond.expression.condition;
 	}
 
-	return code;
+	let expr = compileComparison(leftCond.expression);
+
+	function testForOperator(c: Condition): string {
+		if (c.expression.$type === 'Operator') {
+			const op = c.expression.op === 'and' ? '&&' : '||';
+			return `${op} ${testForOperator(c.expression.condition)}`;
+		}
+		return compileComparison(c.expression);
+	}
+
+	const suffix = testForOperator(cond);
+	return (suffix.startsWith('&&') || suffix.startsWith('||'))
+		? `${expr} ${suffix}`
+		: expr;
 }
 
-function compileTransition(transition: Transition, fileNode: CompositeGeneratorNode) {
-	for (const c of transition.conditions) {
+function compileTransition(t: Transition, fileNode: CompositeGeneratorNode) {
+	const conditionCode = buildConditionExpression(t.condition);
+	const next = t.next.ref!.name;
 
-		const conditionCode = compileCondition(c);
-		const nextState = c.next.ref!.name;
-
-		fileNode.append(`
-            if (${conditionCode}) {
-                currentState = ${nextState};
-            }
-        `);
-	}
+	fileNode.append(`
+        if (${conditionCode}) {
+            currentState = ${next};
+        }
+    `);
 }
 
 /* Music notes */

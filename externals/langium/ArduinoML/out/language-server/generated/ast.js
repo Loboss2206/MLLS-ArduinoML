@@ -89,7 +89,7 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
                 return exports.Actuator;
             }
             case 'App:initial':
-            case 'Condition:next': {
+            case 'Transition:next': {
                 return exports.State;
             }
             case 'Comparison:sensor': {
@@ -111,28 +111,12 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
                     ]
                 };
             }
-            case 'Condition': {
-                return {
-                    name: 'Condition',
-                    mandatory: [
-                        { name: 'ops', type: 'array' },
-                        { name: 'rights', type: 'array' }
-                    ]
-                };
-            }
             case 'State': {
                 return {
                     name: 'State',
                     mandatory: [
-                        { name: 'actions', type: 'array' }
-                    ]
-                };
-            }
-            case 'Transition': {
-                return {
-                    name: 'Transition',
-                    mandatory: [
-                        { name: 'conditions', type: 'array' }
+                        { name: 'actions', type: 'array' },
+                        { name: 'transition', type: 'array' }
                     ]
                 };
             }

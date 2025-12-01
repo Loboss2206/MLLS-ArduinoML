@@ -71,15 +71,15 @@ function compileSensor(sensor, fileNode) {
 }
 function compileState(state, fileNode) {
     fileNode.append(`
-				case ` + state.name + `:`);
+                case ${state.name}:`);
     for (const action of state.actions) {
         compileAction(action, fileNode);
     }
-    if (state.transition !== null) {
-        compileTransition(state.transition, fileNode);
+    for (const tr of state.transition) {
+        compileTransition(tr, fileNode);
     }
     fileNode.append(`
-				break;`);
+                break;`);
 }
 function compileAction(action, fileNode) {
     var _a, _b, _c;
@@ -98,28 +98,34 @@ function compileAction(action, fileNode) {
 }
 function compileComparison(cmp) {
     const sensor = cmp.sensor.ref;
-    const value = cmp.value.value;
-    return `digitalRead(${sensor.inputPin}) == ${value}`;
+    return `digitalRead(${sensor.inputPin}) == ${cmp.value.value}`;
 }
-function compileCondition(cond) {
-    let code = compileComparison(cond.left);
-    for (let i = 0; i < cond.ops.length; i++) {
-        const op = cond.ops[i].op === 'and' ? '&&' : '||';
-        const right = compileComparison(cond.rights[i]);
-        code = `(${code} ${op} ${right})`;
+function buildConditionExpression(cond) {
+    let leftCond = cond;
+    while (leftCond.expression.$type === 'Operator') {
+        leftCond = leftCond.expression.condition;
     }
-    return code;
+    let expr = compileComparison(leftCond.expression);
+    function testForOperator(c) {
+        if (c.expression.$type === 'Operator') {
+            const op = c.expression.op === 'and' ? '&&' : '||';
+            return `${op} ${testForOperator(c.expression.condition)}`;
+        }
+        return compileComparison(c.expression);
+    }
+    const suffix = testForOperator(cond);
+    return (suffix.startsWith('&&') || suffix.startsWith('||'))
+        ? `${expr} ${suffix}`
+        : expr;
 }
-function compileTransition(transition, fileNode) {
-    for (const c of transition.conditions) {
-        const conditionCode = compileCondition(c);
-        const nextState = c.next.ref.name;
-        fileNode.append(`
-            if (${conditionCode}) {
-                currentState = ${nextState};
-            }
-        `);
-    }
+function compileTransition(t, fileNode) {
+    const conditionCode = buildConditionExpression(t.condition);
+    const next = t.next.ref.name;
+    fileNode.append(`
+        if (${conditionCode}) {
+            currentState = ${next};
+        }
+    `);
 }
 /* Music notes */
 function pitchToFrequency(pitch) {

@@ -68,12 +68,9 @@ export function isComparison(item: unknown): item is Comparison {
 }
 
 export interface Condition extends AstNode {
-    readonly $container: Transition;
+    readonly $container: Operator | Transition;
     readonly $type: 'Condition';
-    left: Comparison
-    next: Reference<State>
-    ops: Array<Operator>
-    rights: Array<Comparison>
+    expression: Comparison | Operator
 }
 
 export const Condition = 'Condition';
@@ -98,6 +95,7 @@ export function isNote(item: unknown): item is Note {
 export interface Operator extends AstNode {
     readonly $container: Condition;
     readonly $type: 'Operator';
+    condition: Condition
     op: 'and' | 'or'
 }
 
@@ -137,7 +135,7 @@ export interface State extends AstNode {
     readonly $type: 'State';
     actions: Array<Action>
     name: string
-    transition: Transition
+    transition: Array<Transition>
 }
 
 export const State = 'State';
@@ -149,7 +147,8 @@ export function isState(item: unknown): item is State {
 export interface Transition extends AstNode {
     readonly $container: State;
     readonly $type: 'Transition';
-    conditions: Array<Condition>
+    condition: Condition
+    next: Reference<State>
 }
 
 export const Transition = 'Transition';
@@ -198,7 +197,7 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                 return Actuator;
             }
             case 'App:initial':
-            case 'Condition:next': {
+            case 'Transition:next': {
                 return State;
             }
             case 'Comparison:sensor': {
@@ -221,28 +220,12 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                     ]
                 };
             }
-            case 'Condition': {
-                return {
-                    name: 'Condition',
-                    mandatory: [
-                        { name: 'ops', type: 'array' },
-                        { name: 'rights', type: 'array' }
-                    ]
-                };
-            }
             case 'State': {
                 return {
                     name: 'State',
                     mandatory: [
-                        { name: 'actions', type: 'array' }
-                    ]
-                };
-            }
-            case 'Transition': {
-                return {
-                    name: 'Transition',
-                    mandatory: [
-                        { name: 'conditions', type: 'array' }
+                        { name: 'actions', type: 'array' },
+                        { name: 'transition', type: 'array' }
                     ]
                 };
             }

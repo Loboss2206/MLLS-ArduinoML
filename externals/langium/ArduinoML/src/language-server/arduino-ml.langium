@@ -27,7 +27,8 @@ State :
 	name=ID '{'
 		actions+=Action
 		(actions+=Action)* 
-		transition=Transition
+		transition+=Transition
+		(transition+=Transition)*
 	'}';
 
 
@@ -38,13 +39,13 @@ Comparison:
     sensor=[Sensor:ID] 'is' value=Signal;
 
 Operator:
-    op=('and' | 'or');
+    op=('and' | 'or') condition=Condition;
 
 Condition:
-    left=Comparison (ops+=Operator rights+=Comparison)* '=>' next=[State:ID];
+    expression=(Comparison | Operator)+;
 
 Transition:
-    conditions+=Condition*;
+    condition=Condition '=>' next=[State:ID];
 
 Signal:
     value=(HIGH | LOW);
