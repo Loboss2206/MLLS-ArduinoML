@@ -96,22 +96,22 @@ function compileAction(action, fileNode) {
         fileNode.append(`digitalWrite(${(_c = action.actuator.ref) === null || _c === void 0 ? void 0 : _c.outputPin}, ${action.value.value});`);
     }
 }
-function compileComparison(cmp) {
+function compilePredicate(cmp) {
     const sensor = cmp.sensor.ref;
     return `digitalRead(${sensor.inputPin}) == ${cmp.value.value}`;
 }
-function buildConditionExpression(cond) {
+function compileBooleanExpression(cond) {
     let leftCond = cond;
-    while (leftCond.expression.$type === 'Operator') {
+    while (leftCond.expression.$type === 'BinaryExpression') {
         leftCond = leftCond.expression.condition;
     }
-    let expr = compileComparison(leftCond.expression);
+    let expr = compilePredicate(leftCond.expression);
     function testForOperator(c) {
-        if (c.expression.$type === 'Operator') {
+        if (c.expression.$type === 'BinaryExpression') {
             const op = c.expression.op === 'and' ? '&&' : '||';
             return `${op} ${testForOperator(c.expression.condition)}`;
         }
-        return compileComparison(c.expression);
+        return compilePredicate(c.expression);
     }
     const suffix = testForOperator(cond);
     return (suffix.startsWith('&&') || suffix.startsWith('||'))
@@ -119,7 +119,7 @@ function buildConditionExpression(cond) {
         : expr;
 }
 function compileTransition(t, fileNode) {
-    const conditionCode = buildConditionExpression(t.condition);
+    const conditionCode = compileBooleanExpression(t.condition);
     const next = t.next.ref.name;
     fileNode.append(`
         if (${conditionCode}) {

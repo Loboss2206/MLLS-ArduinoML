@@ -54,29 +54,29 @@ export function isApp(item: unknown): item is App {
     return reflection.isInstance(item, App);
 }
 
-export interface Comparison extends AstNode {
-    readonly $container: Condition;
-    readonly $type: 'Comparison';
-    sensor: Reference<Sensor>
-    value: Signal
+export interface BinaryExpression extends AstNode {
+    readonly $container: BooleanExpression;
+    readonly $type: 'BinaryExpression';
+    condition: BooleanExpression
+    op: 'and' | 'or'
 }
 
-export const Comparison = 'Comparison';
+export const BinaryExpression = 'BinaryExpression';
 
-export function isComparison(item: unknown): item is Comparison {
-    return reflection.isInstance(item, Comparison);
+export function isBinaryExpression(item: unknown): item is BinaryExpression {
+    return reflection.isInstance(item, BinaryExpression);
 }
 
-export interface Condition extends AstNode {
-    readonly $container: Operator | Transition;
-    readonly $type: 'Condition';
-    expression: Comparison | Operator
+export interface BooleanExpression extends AstNode {
+    readonly $container: BinaryExpression | Transition;
+    readonly $type: 'BooleanExpression';
+    expression: BinaryExpression | Predicate
 }
 
-export const Condition = 'Condition';
+export const BooleanExpression = 'BooleanExpression';
 
-export function isCondition(item: unknown): item is Condition {
-    return reflection.isInstance(item, Condition);
+export function isBooleanExpression(item: unknown): item is BooleanExpression {
+    return reflection.isInstance(item, BooleanExpression);
 }
 
 export interface Note extends AstNode {
@@ -92,17 +92,17 @@ export function isNote(item: unknown): item is Note {
     return reflection.isInstance(item, Note);
 }
 
-export interface Operator extends AstNode {
-    readonly $container: Condition;
-    readonly $type: 'Operator';
-    condition: Condition
-    op: 'and' | 'or'
+export interface Predicate extends AstNode {
+    readonly $container: BooleanExpression;
+    readonly $type: 'Predicate';
+    sensor: Reference<Sensor>
+    value: Signal
 }
 
-export const Operator = 'Operator';
+export const Predicate = 'Predicate';
 
-export function isOperator(item: unknown): item is Operator {
-    return reflection.isInstance(item, Operator);
+export function isPredicate(item: unknown): item is Predicate {
+    return reflection.isInstance(item, Predicate);
 }
 
 export interface Sensor extends AstNode {
@@ -119,7 +119,7 @@ export function isSensor(item: unknown): item is Sensor {
 }
 
 export interface Signal extends AstNode {
-    readonly $container: Action | Comparison;
+    readonly $container: Action | Predicate;
     readonly $type: 'Signal';
     value: string
 }
@@ -147,7 +147,7 @@ export function isState(item: unknown): item is State {
 export interface Transition extends AstNode {
     readonly $container: State;
     readonly $type: 'Transition';
-    condition: Condition
+    condition: BooleanExpression
     next: Reference<State>
 }
 
@@ -161,11 +161,11 @@ export interface ArduinoMlAstType {
     Action: Action
     Actuator: Actuator
     App: App
+    BinaryExpression: BinaryExpression
+    BooleanExpression: BooleanExpression
     Brick: Brick
-    Comparison: Comparison
-    Condition: Condition
     Note: Note
-    Operator: Operator
+    Predicate: Predicate
     Sensor: Sensor
     Signal: Signal
     State: State
@@ -175,7 +175,7 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'Brick', 'Comparison', 'Condition', 'Note', 'Operator', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'BinaryExpression', 'BooleanExpression', 'Brick', 'Note', 'Predicate', 'Sensor', 'Signal', 'State', 'Transition'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -200,7 +200,7 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
             case 'Transition:next': {
                 return State;
             }
-            case 'Comparison:sensor': {
+            case 'Predicate:sensor': {
                 return Sensor;
             }
             default: {

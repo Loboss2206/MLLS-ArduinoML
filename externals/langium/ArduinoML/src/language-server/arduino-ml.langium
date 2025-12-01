@@ -35,17 +35,17 @@ State :
 Action :
 	actuator=[Actuator:ID] '<=' value=(Signal | Note);
 
-Comparison:
+Predicate:
     sensor=[Sensor:ID] 'is' value=Signal;
 
-Operator:
-    op=('and' | 'or') condition=Condition;
+BinaryExpression:
+    op=('and' | 'or') condition=BooleanExpression;
 
-Condition:
-    expression=(Comparison | Operator)+;
+BooleanExpression:
+    expression=(Predicate | BinaryExpression)+;
 
 Transition:
-    condition=Condition '=>' next=[State:ID];
+    condition=BooleanExpression '=>' next=[State:ID];
 
 Signal:
     value=(HIGH | LOW);
