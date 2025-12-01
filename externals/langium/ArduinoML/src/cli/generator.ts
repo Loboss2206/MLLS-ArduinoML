@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { CompositeGeneratorNode, NL, toString } from 'langium';
 import path from 'path';
-import { Action, Actuator, App, Condition, Note, Sensor, Signal, State, Transition } from '../language-server/generated/ast';
+import { Action, Actuator, App, Condition, Comparison, Note, Sensor, Signal, State, Transition } from '../language-server/generated/ast';
 import { extractDestinationAndName } from './cli-util';
 
 
@@ -63,7 +63,7 @@ long `+ brick.name + `LastDebounceTime = 0;
 	fileNode.append(`
 		}
 	}
-	`,NL);
+	`, NL);
 }
 
 
@@ -109,28 +109,29 @@ function compileAction(action: Action, fileNode: CompositeGeneratorNode) {
 }
 
 
+function compileComparison(cmp: Comparison): string {
+	const sensor = cmp.sensor.ref!;
+	const value = cmp.value.value;
+
+	return `digitalRead(${sensor.inputPin}) == ${value}`;
+}
+
 function compileCondition(cond: Condition): string {
-	const sensor = cond.sensor.ref!;
-	const value = cond.value.value;
+	let code = compileComparison(cond.left);
 
-	let code = `digitalRead(${sensor.inputPin}) == ${value}`;
-
-	if (cond.op && cond.condition) {
-		const op = cond.op === 'and' ? '&&' : '||';
-		const right = compileCondition(cond.condition);
-		code = `${code} ${op} ${right}`;
+	for (let i = 0; i < cond.ops.length; i++) {
+		const op = cond.ops[i].op === 'and' ? '&&' : '||';
+		const right = compileComparison(cond.rights[i]);
+		code = `(${code} ${op} ${right})`;
 	}
 
 	return code;
 }
 
-
 function compileTransition(transition: Transition, fileNode: CompositeGeneratorNode) {
 	for (const c of transition.conditions) {
-		if (!c) continue;
 
-		const conditionCode = compileCondition(c.condition);
-
+		const conditionCode = compileCondition(c);
 		const nextState = c.next.ref!.name;
 
 		fileNode.append(`
@@ -141,22 +142,21 @@ function compileTransition(transition: Transition, fileNode: CompositeGeneratorN
 	}
 }
 
-
 /* Music notes */
 
 function pitchToFrequency(pitch: string): number {
-    const noteBase: Record<string, number> = { 'C': -9, 'D': -7, 'E': -5, 'F': -4, 'G': -2, 'A': 0, 'B': 2 };
+	const noteBase: Record<string, number> = { 'C': -9, 'D': -7, 'E': -5, 'F': -4, 'G': -2, 'A': 0, 'B': 2 };
 
-    const match = pitch.match(/^([A-G])([#b]?)([0-8]?)$/);
-    if (!match) return 440;
+	const match = pitch.match(/^([A-G])([#b]?)([0-8]?)$/);
+	if (!match) return 440;
 
-    let [, base, accidental, octaveStr] = match;
-    let octave = octaveStr ? parseInt(octaveStr) : 4;
+	let [, base, accidental, octaveStr] = match;
+	let octave = octaveStr ? parseInt(octaveStr) : 4;
 
-    let n = noteBase[base];
-    if (accidental === '#') n += 1;
-    else if (accidental === 'b') n -= 1;
-    n += (octave - 4) * 12;
+	let n = noteBase[base];
+	if (accidental === '#') n += 1;
+	else if (accidental === 'b') n -= 1;
+	n += (octave - 4) * 12;
 
-    return Math.round(440 * Math.pow(2, n / 12));
+	return Math.round(440 * Math.pow(2, n / 12));
 }

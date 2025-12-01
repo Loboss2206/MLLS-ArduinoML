@@ -96,22 +96,23 @@ function compileAction(action, fileNode) {
         fileNode.append(`digitalWrite(${(_c = action.actuator.ref) === null || _c === void 0 ? void 0 : _c.outputPin}, ${action.value.value});`);
     }
 }
+function compileComparison(cmp) {
+    const sensor = cmp.sensor.ref;
+    const value = cmp.value.value;
+    return `digitalRead(${sensor.inputPin}) == ${value}`;
+}
 function compileCondition(cond) {
-    const sensor = cond.sensor.ref;
-    const value = cond.value.value;
-    let code = `digitalRead(${sensor.inputPin}) == ${value}`;
-    if (cond.op && cond.condition) {
-        const op = cond.op === 'and' ? '&&' : '||';
-        const right = compileCondition(cond.condition);
-        code = `${code} ${op} ${right}`;
+    let code = compileComparison(cond.left);
+    for (let i = 0; i < cond.ops.length; i++) {
+        const op = cond.ops[i].op === 'and' ? '&&' : '||';
+        const right = compileComparison(cond.rights[i]);
+        code = `(${code} ${op} ${right})`;
     }
     return code;
 }
 function compileTransition(transition, fileNode) {
     for (const c of transition.conditions) {
-        if (!c)
-            continue;
-        const conditionCode = compileCondition(c.condition);
+        const conditionCode = compileCondition(c);
         const nextState = c.next.ref.name;
         fileNode.append(`
             if (${conditionCode}) {

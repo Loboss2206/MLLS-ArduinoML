@@ -4,7 +4,7 @@
  * DO NOT EDIT MANUALLY!
  ******************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reflection = exports.ArduinoMlAstReflection = exports.isTransition = exports.Transition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensor = exports.Sensor = exports.isNote = exports.Note = exports.isConditionWithNext = exports.ConditionWithNext = exports.isCondition = exports.Condition = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isBrick = exports.Brick = void 0;
+exports.reflection = exports.ArduinoMlAstReflection = exports.isTransition = exports.Transition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensor = exports.Sensor = exports.isOperator = exports.Operator = exports.isNote = exports.Note = exports.isCondition = exports.Condition = exports.isComparison = exports.Comparison = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isBrick = exports.Brick = void 0;
 /* eslint-disable */
 const langium_1 = require("langium");
 exports.Brick = 'Brick';
@@ -27,21 +27,26 @@ function isApp(item) {
     return exports.reflection.isInstance(item, exports.App);
 }
 exports.isApp = isApp;
+exports.Comparison = 'Comparison';
+function isComparison(item) {
+    return exports.reflection.isInstance(item, exports.Comparison);
+}
+exports.isComparison = isComparison;
 exports.Condition = 'Condition';
 function isCondition(item) {
     return exports.reflection.isInstance(item, exports.Condition);
 }
 exports.isCondition = isCondition;
-exports.ConditionWithNext = 'ConditionWithNext';
-function isConditionWithNext(item) {
-    return exports.reflection.isInstance(item, exports.ConditionWithNext);
-}
-exports.isConditionWithNext = isConditionWithNext;
 exports.Note = 'Note';
 function isNote(item) {
     return exports.reflection.isInstance(item, exports.Note);
 }
 exports.isNote = isNote;
+exports.Operator = 'Operator';
+function isOperator(item) {
+    return exports.reflection.isInstance(item, exports.Operator);
+}
+exports.isOperator = isOperator;
 exports.Sensor = 'Sensor';
 function isSensor(item) {
     return exports.reflection.isInstance(item, exports.Sensor);
@@ -64,7 +69,7 @@ function isTransition(item) {
 exports.isTransition = isTransition;
 class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
     getAllTypes() {
-        return ['Action', 'Actuator', 'App', 'Brick', 'Condition', 'ConditionWithNext', 'Note', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'Brick', 'Comparison', 'Condition', 'Note', 'Operator', 'Sensor', 'Signal', 'State', 'Transition'];
     }
     computeIsSubtype(subtype, supertype) {
         switch (subtype) {
@@ -84,10 +89,10 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
                 return exports.Actuator;
             }
             case 'App:initial':
-            case 'ConditionWithNext:next': {
+            case 'Condition:next': {
                 return exports.State;
             }
-            case 'Condition:sensor': {
+            case 'Comparison:sensor': {
                 return exports.Sensor;
             }
             default: {
@@ -103,6 +108,15 @@ class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
                     mandatory: [
                         { name: 'bricks', type: 'array' },
                         { name: 'states', type: 'array' }
+                    ]
+                };
+            }
+            case 'Condition': {
+                return {
+                    name: 'Condition',
+                    mandatory: [
+                        { name: 'ops', type: 'array' },
+                        { name: 'rights', type: 'array' }
                     ]
                 };
             }

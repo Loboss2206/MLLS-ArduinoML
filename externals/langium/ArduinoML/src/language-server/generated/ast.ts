@@ -54,32 +54,32 @@ export function isApp(item: unknown): item is App {
     return reflection.isInstance(item, App);
 }
 
-export interface Condition extends AstNode {
-    readonly $container: Condition | ConditionWithNext;
-    readonly $type: 'Condition';
-    condition?: Condition
-    op?: 'and' | 'or'
+export interface Comparison extends AstNode {
+    readonly $container: Condition;
+    readonly $type: 'Comparison';
     sensor: Reference<Sensor>
     value: Signal
+}
+
+export const Comparison = 'Comparison';
+
+export function isComparison(item: unknown): item is Comparison {
+    return reflection.isInstance(item, Comparison);
+}
+
+export interface Condition extends AstNode {
+    readonly $container: Transition;
+    readonly $type: 'Condition';
+    left: Comparison
+    next: Reference<State>
+    ops: Array<Operator>
+    rights: Array<Comparison>
 }
 
 export const Condition = 'Condition';
 
 export function isCondition(item: unknown): item is Condition {
     return reflection.isInstance(item, Condition);
-}
-
-export interface ConditionWithNext extends AstNode {
-    readonly $container: Transition;
-    readonly $type: 'ConditionWithNext';
-    condition: Condition
-    next: Reference<State>
-}
-
-export const ConditionWithNext = 'ConditionWithNext';
-
-export function isConditionWithNext(item: unknown): item is ConditionWithNext {
-    return reflection.isInstance(item, ConditionWithNext);
 }
 
 export interface Note extends AstNode {
@@ -93,6 +93,18 @@ export const Note = 'Note';
 
 export function isNote(item: unknown): item is Note {
     return reflection.isInstance(item, Note);
+}
+
+export interface Operator extends AstNode {
+    readonly $container: Condition;
+    readonly $type: 'Operator';
+    op: 'and' | 'or'
+}
+
+export const Operator = 'Operator';
+
+export function isOperator(item: unknown): item is Operator {
+    return reflection.isInstance(item, Operator);
 }
 
 export interface Sensor extends AstNode {
@@ -109,7 +121,7 @@ export function isSensor(item: unknown): item is Sensor {
 }
 
 export interface Signal extends AstNode {
-    readonly $container: Action | Condition;
+    readonly $container: Action | Comparison;
     readonly $type: 'Signal';
     value: string
 }
@@ -137,7 +149,7 @@ export function isState(item: unknown): item is State {
 export interface Transition extends AstNode {
     readonly $container: State;
     readonly $type: 'Transition';
-    conditions: Array<ConditionWithNext>
+    conditions: Array<Condition>
 }
 
 export const Transition = 'Transition';
@@ -151,9 +163,10 @@ export interface ArduinoMlAstType {
     Actuator: Actuator
     App: App
     Brick: Brick
+    Comparison: Comparison
     Condition: Condition
-    ConditionWithNext: ConditionWithNext
     Note: Note
+    Operator: Operator
     Sensor: Sensor
     Signal: Signal
     State: State
@@ -163,7 +176,7 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'Brick', 'Condition', 'ConditionWithNext', 'Note', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'Brick', 'Comparison', 'Condition', 'Note', 'Operator', 'Sensor', 'Signal', 'State', 'Transition'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -185,10 +198,10 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                 return Actuator;
             }
             case 'App:initial':
-            case 'ConditionWithNext:next': {
+            case 'Condition:next': {
                 return State;
             }
-            case 'Condition:sensor': {
+            case 'Comparison:sensor': {
                 return Sensor;
             }
             default: {
@@ -205,6 +218,15 @@ export class ArduinoMlAstReflection extends AbstractAstReflection {
                     mandatory: [
                         { name: 'bricks', type: 'array' },
                         { name: 'states', type: 'array' }
+                    ]
+                };
+            }
+            case 'Condition': {
+                return {
+                    name: 'Condition',
+                    mandatory: [
+                        { name: 'ops', type: 'array' },
+                        { name: 'rights', type: 'array' }
                     ]
                 };
             }

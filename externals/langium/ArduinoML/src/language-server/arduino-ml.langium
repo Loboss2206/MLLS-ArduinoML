@@ -34,15 +34,17 @@ State :
 Action :
 	actuator=[Actuator:ID] '<=' value=(Signal | Note);
 
-Condition :
-    sensor=[Sensor:ID] 'is' value=Signal
-    (op=('and' | 'or') condition=Condition)?;
+Comparison:
+    sensor=[Sensor:ID] 'is' value=Signal;
 
-ConditionWithNext:
-    condition=Condition '=>' next=[State:ID];
+Operator:
+    op=('and' | 'or');
+
+Condition:
+    left=Comparison (ops+=Operator rights+=Comparison)* '=>' next=[State:ID];
 
 Transition:
-    conditions+=ConditionWithNext*;
+    conditions+=Condition*;
 
 Signal:
     value=(HIGH | LOW);
