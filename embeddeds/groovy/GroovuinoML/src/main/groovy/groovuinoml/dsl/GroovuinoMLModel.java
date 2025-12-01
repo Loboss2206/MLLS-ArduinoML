@@ -49,18 +49,18 @@ public class GroovuinoMLModel {
 		this.binding.setVariable(name, state);
 	}
 	
-	public ICondition createComparison(Sensor sensor, SIGNAL value) {
-		return new Comparison(sensor, value);
+	public BooleanExpression createPredicate(Sensor sensor, SIGNAL value) {
+		return new Predicate(sensor, value);
 	}
 	
-	public ICondition createOperation(String operator, ICondition left, ICondition right) {
-		return new Operation(Operator.valueOf(operator.toUpperCase()), left, right);
+	public BooleanExpression createBinaryExpression(String operator, BooleanExpression left, BooleanExpression right) {
+		return new BinaryExpression(Operator.valueOf(operator.toUpperCase()), left, right);
 	}
 
-	public void createTransition(State from, State to, ICondition condition) {
+	public void createTransition(State from, State to, BooleanExpression condition) {
 		Transition transition = new Transition();
 		transition.setNext(to);
-		transition.setCondition(condition);
+		transition.setBooleanExpression(condition);
 		from.addTransition(transition);
 	}
 

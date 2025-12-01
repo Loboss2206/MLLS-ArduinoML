@@ -10,7 +10,6 @@ public class Action implements Visitable {
 	private SIGNAL value;
 	private Actuator actuator;
 
-
 	public SIGNAL getValue() {
 		return value;
 	}

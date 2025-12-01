@@ -17,8 +17,8 @@ public abstract class Visitor<T> {
 	public abstract void visit(Actuator actuator);
 	public abstract void visit(Sensor sensor);
 	public abstract void visit(TimeTransition transition);
-	public abstract void visit(Comparison comparison);
-	public abstract void visit(Operation operation);
+	public abstract void visit(Predicate predicate);
+	public abstract void visit(BinaryExpression binaryExpression);
 
 	/***********************
 	 ** Helper mechanisms **

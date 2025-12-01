@@ -4,12 +4,12 @@ import io.github.mosser.arduinoml.kernel.generator.Visitor;
 import io.github.mosser.arduinoml.kernel.structural.SIGNAL;
 import io.github.mosser.arduinoml.kernel.structural.Sensor;
 
-public class Comparison implements ICondition {
+public class Predicate implements BooleanExpression {
 
     private Sensor sensor;
     private SIGNAL value;
 
-    public Comparison(Sensor sensor, SIGNAL value) {
+    public Predicate(Sensor sensor, SIGNAL value) {
         this.sensor = sensor;
         this.value = value;
     }

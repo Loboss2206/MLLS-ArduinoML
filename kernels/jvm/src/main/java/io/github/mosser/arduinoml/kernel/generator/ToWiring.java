@@ -116,7 +116,7 @@ public class ToWiring extends Visitor<StringBuffer> {
         }
         if(context.get("pass") == PASS.TWO) {
             w("\t\t\tif( ");
-            transition.getCondition().accept(this);
+            transition.getBooleanExpression().accept(this);
             w(" ) {\n");
             w("\t\t\t\tcurrentState = " + transition.getNext().getName() + ";\n");
             w("\t\t\t}\n");
@@ -150,32 +150,28 @@ public class ToWiring extends Visitor<StringBuffer> {
 	}
 
     @Override
-    public void visit(Comparison comparison) {
+    public void visit(Predicate predicate) {
         if(context.get("pass") == PASS.ONE) {
             return;
         }
         if(context.get("pass") == PASS.TWO) {
-            Sensor sensor = comparison.getSensor();
+            Sensor sensor = predicate.getSensor();
             w(String.format("(digitalRead(%d) == %s && %sBounceGuard)", 
-                sensor.getPin(), comparison.getValue(), sensor.getName()));
+                sensor.getPin(), predicate.getValue(), sensor.getName()));
             return;
         }
     }
 
     @Override
-    public void visit(Operation operation) {
+    public void visit(BinaryExpression binaryExpression) {
         if(context.get("pass") == PASS.ONE) {
             return;
         }
         if(context.get("pass") == PASS.TWO) {
             w("(");
-            List<ICondition> conditions = operation.getConditions();
-            for(int i=0; i<conditions.size(); i++) {
-                conditions.get(i).accept(this);
-                if(i < conditions.size() - 1) {
-                    w(operation.getOperator() == Operator.AND ? " && " : " || ");
-                }
-            }
+            binaryExpression.getLeft().accept(this);
+            w(binaryExpression.getOperator() == Operator.AND ? " && " : " || ");
+            binaryExpression.getRight().accept(this);
             w(")");
             return;
         }

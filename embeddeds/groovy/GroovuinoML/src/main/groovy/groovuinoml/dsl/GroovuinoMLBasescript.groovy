@@ -1,7 +1,7 @@
 package main.groovy.groovuinoml.dsl
 
 import io.github.mosser.arduinoml.kernel.behavioral.Action
-import io.github.mosser.arduinoml.kernel.behavioral.ICondition
+import io.github.mosser.arduinoml.kernel.behavioral.BooleanExpression
 import io.github.mosser.arduinoml.kernel.behavioral.State
 import io.github.mosser.arduinoml.kernel.behavioral.Transition
 import io.github.mosser.arduinoml.kernel.structural.Actuator
@@ -54,7 +54,7 @@ abstract class GroovuinoMLBasescript extends Script {
                     Sensor sensor = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(sensorName)
                     SIGNAL signal = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signalName)
 
-                    ICondition condition = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(sensor, signal)
+                    BooleanExpression condition = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createPredicate(sensor, signal)
                     ((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createTransition(s1, s2, condition)
                     
                     Transition t = s1.getTransitions().get(s1.getTransitions().size()-1)
@@ -66,11 +66,11 @@ abstract class GroovuinoMLBasescript extends Script {
                                 [becomes: { String nextSignal ->
                                     Sensor ns = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSensor)
                                     SIGNAL nsig = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSignal)
-                                    ICondition right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(ns, nsig)
+                                    BooleanExpression right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createPredicate(ns, nsig)
                                     
-                                    ICondition current = t.getCondition()
-                                    ICondition newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createOperation("AND", current, right)
-                                    t.setCondition(newCond)
+									BooleanExpression current = t.getBooleanExpression()
+									BooleanExpression newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createBinaryExpression("AND", current, right)
+									t.setBooleanExpression(newCond)
                                     
                                     return conditionBuilder()
                                 }]
@@ -79,11 +79,11 @@ abstract class GroovuinoMLBasescript extends Script {
                                 [becomes: { String nextSignal ->
                                     Sensor ns = (Sensor)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSensor)
                                     SIGNAL nsig = (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(nextSignal)
-                                    ICondition right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createComparison(ns, nsig)
+                                    BooleanExpression right = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createPredicate(ns, nsig)
 
-                                    ICondition current = t.getCondition()
-                                    ICondition newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createOperation("OR", current, right)
-                                    t.setCondition(newCond)
+									BooleanExpression current = t.getBooleanExpression()
+									BooleanExpression newCond = ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createBinaryExpression("OR", current, right)
+									t.setBooleanExpression(newCond)
 
                                     return conditionBuilder()
                                 }]

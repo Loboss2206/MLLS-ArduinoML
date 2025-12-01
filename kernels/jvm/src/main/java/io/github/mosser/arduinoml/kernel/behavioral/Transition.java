@@ -6,7 +6,7 @@ import io.github.mosser.arduinoml.kernel.generator.Visitor;
 public class Transition implements Visitable {
 
     private State next;
-    private ICondition condition;
+    private BooleanExpression booleanExpression;
 
 	public State getNext() {
 		return next;
@@ -16,12 +16,12 @@ public class Transition implements Visitable {
 		this.next = next;
 	}
 
-    public ICondition getCondition() {
-        return condition;
+    public BooleanExpression getBooleanExpression() {
+        return booleanExpression;
     }
 
-    public void setCondition(ICondition condition) {
-        this.condition = condition;
+    public void setBooleanExpression(BooleanExpression booleanExpression) {
+        this.booleanExpression = booleanExpression;
     }
 
     @Override
