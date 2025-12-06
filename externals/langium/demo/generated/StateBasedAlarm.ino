@@ -19,20 +19,18 @@ long buttonLastDebounceTime = 0;
 	void loop() {
 			switch(currentState){
 
-				case off:
-					digitalWrite(12,LOW);
-        	if(digitalRead(8) == HIGH) {
-         	   currentState = on;
+                case off:digitalWrite(12, LOW);
+        if (digitalRead(8) == HIGH) {
+            currentState = on;
         }
-    	
-				break;
-				case on:
-					digitalWrite(12,HIGH);
-        	if(digitalRead(8) == HIGH) {
-         	   currentState = off;
+    
+                break;
+                case on:digitalWrite(12, HIGH);
+        if (digitalRead(8) == HIGH) {
+            currentState = off;
         }
-    	
-				break;
+    
+                break;
 		}
 	}
 	

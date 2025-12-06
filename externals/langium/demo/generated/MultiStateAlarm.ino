@@ -20,30 +20,24 @@ long buttonLastDebounceTime = 0;
 	void loop() {
 			switch(currentState){
 
-				case ready:
-					digitalWrite(11,LOW);
-					digitalWrite(12,LOW);
-        	if(digitalRead(8) == HIGH) {
-         	   currentState = noise;
+                case ready:digitalWrite(11, LOW);digitalWrite(12, LOW);
+        if (digitalRead(8) == HIGH) {
+            currentState = noise;
         }
-    	
-				break;
-				case noise:
-					digitalWrite(11,HIGH);
-					digitalWrite(12,LOW);
-        	if(digitalRead(8) == HIGH) {
-         	   currentState = light;
+    
+                break;
+                case noise:digitalWrite(11, HIGH);digitalWrite(12, LOW);
+        if (digitalRead(8) == HIGH) {
+            currentState = light;
         }
-    	
-				break;
-				case light:
-					digitalWrite(11,LOW);
-					digitalWrite(12,HIGH);
-        	if(digitalRead(8) == HIGH) {
-         	   currentState = ready;
+    
+                break;
+                case light:digitalWrite(11, LOW);digitalWrite(12, HIGH);
+        if (digitalRead(8) == HIGH) {
+            currentState = ready;
         }
-    	
-				break;
+    
+                break;
 		}
 	}
 	

@@ -8,7 +8,8 @@ function registerValidationChecks(services) {
     const registry = services.validation.ValidationRegistry;
     const validator = services.validation.ArduinoMlValidator;
     const checks = {
-        App: validator.checkNothing
+        App: validator.checkNothing,
+        Action: validator.checkAction,
     };
     registry.register(checks, validator);
 }
@@ -22,6 +23,14 @@ class ArduinoMlValidator {
             const firstChar = app.name.substring(0, 1);
             if (firstChar.toUpperCase() !== firstChar) {
                 accept('warning', 'App name should start with a capital.', { node: app, property: 'name' });
+            }
+        }
+    }
+    checkAction(action, accept) {
+        var _a;
+        if ('pitch' in action.value) {
+            if (((_a = action.actuator.ref) === null || _a === void 0 ? void 0 : _a.$type) !== 'Buzzer') {
+                accept('error', 'Only a Buzzer can play a Note', { node: action });
             }
         }
     }

@@ -12,17 +12,28 @@ entry App:
 		( states+=State)* 		
 	'}';
 
+
 Brick :
 	(Actuator | Sensor);
 
+
 Actuator:
-	{infer Actuator}
-	'Actuator' name=ID ':' outputPin=INT;
+	(LED | Buzzer);
+
+LED:
+	{infer LED}
+	'LED' name=ID ':' outputPin=INT;
+
+Buzzer:
+	{infer Buzzer}
+	'Buzzer' name=ID ':' outputPin=INT;
+
 
 Sensor :
 	{infer Sensor}
 	'Sensor'  name=ID ':' inputPin=INT;
 	
+
 State :
 	name=ID '{'
 		actions+=Action
@@ -32,8 +43,22 @@ State :
 	'}';
 
 
-Action :
+Action:
 	actuator=[Actuator:ID] '<=' value=(Signal | Note);
+
+Signal:
+    value=(HIGH | LOW);
+
+Note:
+    'NOTE' '(' pitch=PITCH ',' duration=INT ')';
+
+
+Transition:
+    condition=BooleanExpression '=>' next=[State:ID];
+
+
+BooleanExpression:
+    expression=(Predicate | BinaryExpression)+;
 
 Predicate:
     sensor=[Sensor:ID] 'is' value=Signal;
@@ -41,17 +66,6 @@ Predicate:
 BinaryExpression:
     op=('and' | 'or') condition=BooleanExpression;
 
-BooleanExpression:
-    expression=(Predicate | BinaryExpression)+;
-
-Transition:
-    condition=BooleanExpression '=>' next=[State:ID];
-
-Signal:
-    value=(HIGH | LOW);
-
-Note:
-    'NOTE' '(' pitch=PITCH ',' duration=INT ')';
 
 terminal HIGH : 'HIGH';
 terminal LOW : 'LOW';

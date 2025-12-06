@@ -6,6 +6,14 @@
 /* eslint-disable */
 import { AstNode, AbstractAstReflection, Reference, ReferenceInfo, TypeMetaData } from 'langium';
 
+export type Actuator = Buzzer | LED;
+
+export const Actuator = 'Actuator';
+
+export function isActuator(item: unknown): item is Actuator {
+    return reflection.isInstance(item, Actuator);
+}
+
 export type Brick = Actuator | Sensor;
 
 export const Brick = 'Brick';
@@ -25,19 +33,6 @@ export const Action = 'Action';
 
 export function isAction(item: unknown): item is Action {
     return reflection.isInstance(item, Action);
-}
-
-export interface Actuator extends AstNode {
-    readonly $container: App;
-    readonly $type: 'Actuator';
-    name: string
-    outputPin: number
-}
-
-export const Actuator = 'Actuator';
-
-export function isActuator(item: unknown): item is Actuator {
-    return reflection.isInstance(item, Actuator);
 }
 
 export interface App extends AstNode {
@@ -77,6 +72,32 @@ export const BooleanExpression = 'BooleanExpression';
 
 export function isBooleanExpression(item: unknown): item is BooleanExpression {
     return reflection.isInstance(item, BooleanExpression);
+}
+
+export interface Buzzer extends AstNode {
+    readonly $container: App;
+    readonly $type: 'Buzzer';
+    name: string
+    outputPin: number
+}
+
+export const Buzzer = 'Buzzer';
+
+export function isBuzzer(item: unknown): item is Buzzer {
+    return reflection.isInstance(item, Buzzer);
+}
+
+export interface LED extends AstNode {
+    readonly $container: App;
+    readonly $type: 'LED';
+    name: string
+    outputPin: number
+}
+
+export const LED = 'LED';
+
+export function isLED(item: unknown): item is LED {
+    return reflection.isInstance(item, LED);
 }
 
 export interface Note extends AstNode {
@@ -164,6 +185,8 @@ export interface ArduinoMlAstType {
     BinaryExpression: BinaryExpression
     BooleanExpression: BooleanExpression
     Brick: Brick
+    Buzzer: Buzzer
+    LED: LED
     Note: Note
     Predicate: Predicate
     Sensor: Sensor
@@ -175,13 +198,17 @@ export interface ArduinoMlAstType {
 export class ArduinoMlAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return ['Action', 'Actuator', 'App', 'BinaryExpression', 'BooleanExpression', 'Brick', 'Note', 'Predicate', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'BinaryExpression', 'BooleanExpression', 'Brick', 'Buzzer', 'LED', 'Note', 'Predicate', 'Sensor', 'Signal', 'State', 'Transition'];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
         switch (subtype) {
-            case Actuator:
-            case Sensor: {
+            case Buzzer:
+            case LED: {
+                return this.isSubtype(Actuator, supertype);
+            }
+            case Sensor:
+            case Actuator: {
                 return this.isSubtype(Brick, supertype);
             }
             default: {

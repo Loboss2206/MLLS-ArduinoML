@@ -4,9 +4,14 @@
  * DO NOT EDIT MANUALLY!
  ******************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reflection = exports.ArduinoMlAstReflection = exports.isTransition = exports.Transition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensor = exports.Sensor = exports.isPredicate = exports.Predicate = exports.isNote = exports.Note = exports.isBooleanExpression = exports.BooleanExpression = exports.isBinaryExpression = exports.BinaryExpression = exports.isApp = exports.App = exports.isActuator = exports.Actuator = exports.isAction = exports.Action = exports.isBrick = exports.Brick = void 0;
+exports.reflection = exports.ArduinoMlAstReflection = exports.isTransition = exports.Transition = exports.isState = exports.State = exports.isSignal = exports.Signal = exports.isSensor = exports.Sensor = exports.isPredicate = exports.Predicate = exports.isNote = exports.Note = exports.isLED = exports.LED = exports.isBuzzer = exports.Buzzer = exports.isBooleanExpression = exports.BooleanExpression = exports.isBinaryExpression = exports.BinaryExpression = exports.isApp = exports.App = exports.isAction = exports.Action = exports.isBrick = exports.Brick = exports.isActuator = exports.Actuator = void 0;
 /* eslint-disable */
 const langium_1 = require("langium");
+exports.Actuator = 'Actuator';
+function isActuator(item) {
+    return exports.reflection.isInstance(item, exports.Actuator);
+}
+exports.isActuator = isActuator;
 exports.Brick = 'Brick';
 function isBrick(item) {
     return exports.reflection.isInstance(item, exports.Brick);
@@ -17,11 +22,6 @@ function isAction(item) {
     return exports.reflection.isInstance(item, exports.Action);
 }
 exports.isAction = isAction;
-exports.Actuator = 'Actuator';
-function isActuator(item) {
-    return exports.reflection.isInstance(item, exports.Actuator);
-}
-exports.isActuator = isActuator;
 exports.App = 'App';
 function isApp(item) {
     return exports.reflection.isInstance(item, exports.App);
@@ -37,6 +37,16 @@ function isBooleanExpression(item) {
     return exports.reflection.isInstance(item, exports.BooleanExpression);
 }
 exports.isBooleanExpression = isBooleanExpression;
+exports.Buzzer = 'Buzzer';
+function isBuzzer(item) {
+    return exports.reflection.isInstance(item, exports.Buzzer);
+}
+exports.isBuzzer = isBuzzer;
+exports.LED = 'LED';
+function isLED(item) {
+    return exports.reflection.isInstance(item, exports.LED);
+}
+exports.isLED = isLED;
 exports.Note = 'Note';
 function isNote(item) {
     return exports.reflection.isInstance(item, exports.Note);
@@ -69,12 +79,16 @@ function isTransition(item) {
 exports.isTransition = isTransition;
 class ArduinoMlAstReflection extends langium_1.AbstractAstReflection {
     getAllTypes() {
-        return ['Action', 'Actuator', 'App', 'BinaryExpression', 'BooleanExpression', 'Brick', 'Note', 'Predicate', 'Sensor', 'Signal', 'State', 'Transition'];
+        return ['Action', 'Actuator', 'App', 'BinaryExpression', 'BooleanExpression', 'Brick', 'Buzzer', 'LED', 'Note', 'Predicate', 'Sensor', 'Signal', 'State', 'Transition'];
     }
     computeIsSubtype(subtype, supertype) {
         switch (subtype) {
-            case exports.Actuator:
-            case exports.Sensor: {
+            case exports.Buzzer:
+            case exports.LED: {
+                return this.isSubtype(exports.Actuator, supertype);
+            }
+            case exports.Sensor:
+            case exports.Actuator: {
                 return this.isSubtype(exports.Brick, supertype);
             }
             default: {

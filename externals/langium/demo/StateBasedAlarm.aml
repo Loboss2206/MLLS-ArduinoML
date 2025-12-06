@@ -1,6 +1,6 @@
 app StateBasedAlarm initial state off {
 	bricks
-		Actuator red_led : 12
+		LED red_led : 12
 		Sensor button : 8
 	
 	states

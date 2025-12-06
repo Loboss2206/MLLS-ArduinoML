@@ -1,7 +1,7 @@
 app VerySimpleAlarm initial state off {
     bricks
-        Actuator led : 12
-        Actuator buzzer : 11
+        LED led : 12
+        Buzzer buzzer : 11
         Sensor button : 8
 
     states
