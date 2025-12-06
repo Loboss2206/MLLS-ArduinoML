@@ -100,6 +100,16 @@ public class ToWiring extends Visitor<StringBuffer> {
 			}
 
             if (state.getTransitions() != null) {
+				// Update all bounce guards before checking transitions
+				java.util.Set<Sensor> sensorsInTransitions = new java.util.HashSet<>();
+				for(Transition t : state.getTransitions()) {
+					collectSensors(t.getBooleanExpression(), sensorsInTransitions);
+				}
+				for(Sensor s : sensorsInTransitions) {
+					w(String.format("\t\t\t%sBounceGuard = millis() - %sLastDebounceTime > debounce;\n",
+						s.getName(), s.getName()));
+				}
+
                 for(Transition t : state.getTransitions()) {
                     t.accept(this);
                 }
@@ -108,6 +118,15 @@ public class ToWiring extends Visitor<StringBuffer> {
             return;
         }
     }
+
+	private void collectSensors(BooleanExpression expr, java.util.Set<Sensor> sensors) {
+		if (expr instanceof Predicate) {
+			sensors.add(((Predicate) expr).getSensor());
+		} else if (expr instanceof BinaryExpression) {
+			collectSensors(((BinaryExpression) expr).getLeft(), sensors);
+			collectSensors(((BinaryExpression) expr).getRight(), sensors);
+		}
+	}
 
     @Override
     public void visit(Transition transition) {
@@ -118,6 +137,14 @@ public class ToWiring extends Visitor<StringBuffer> {
             w("\t\t\tif( ");
             transition.getBooleanExpression().accept(this);
             w(" ) {\n");
+
+			// Update timestamps for all sensors in this transition
+			java.util.Set<Sensor> sensors = new java.util.HashSet<>();
+			collectSensors(transition.getBooleanExpression(), sensors);
+			for(Sensor s : sensors) {
+				w(String.format("\t\t\t\t%sLastDebounceTime = millis();\n", s.getName()));
+			}
+
             w("\t\t\t\tcurrentState = " + transition.getNext().getName() + ";\n");
             w("\t\t\t}\n");
             return;
@@ -145,6 +172,21 @@ public class ToWiring extends Visitor<StringBuffer> {
 		}
 		if(context.get("pass") == PASS.TWO) {
 			w(String.format("\t\t\tdigitalWrite(%d,%s);\n",action.getActuator().getPin(),action.getValue()));
+			return;
+		}
+	}
+
+	@Override
+	public void visit(NoteAction noteAction) {
+		if(context.get("pass") == PASS.ONE) {
+			return;
+		}
+		if(context.get("pass") == PASS.TWO) {
+			Note note = noteAction.getNote();
+			int buzzerPin = noteAction.getActuator().getPin();
+			w(String.format("\t\t\ttone(%d, %d, %d);\n", buzzerPin, note.getFrequency(), note.getDuration()));
+			w(String.format("\t\t\tdelay(%d);\n", note.getDuration()));
+			w(String.format("\t\t\tnoTone(%d);\n", buzzerPin));
 			return;
 		}
 	}
