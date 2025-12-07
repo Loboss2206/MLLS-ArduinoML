@@ -20,6 +20,16 @@ abstract class GroovuinoMLBasescript extends Script {
 	def actuator(String name) {
 		[pin: { n -> ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createActuator(name, n) }]
 	}
+
+	// buzzer "name" pin n (specialized actuator)
+	def buzzer(String name) {
+		[pin: { n -> ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createBuzzer(name, n) }]
+	}
+
+	// led "name" pin n (specialized actuator)
+	def led(String name) {
+		[pin: { n -> ((GroovuinoMLBinding)this.getBinding()).getGroovuinoMLModel().createLED(name, n) }]
+	}
 	
 	// state "name" means actuator becomes signal [and actuator becomes signal]*n
 	// state "name" means play note on buzzer [and ...]*n
