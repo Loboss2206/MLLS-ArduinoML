@@ -140,25 +140,25 @@ trait ArduinoML {
 
   protected case class ActionBuilder(actuator: StructureBuilder, signal: Signal)
 
-  protected case class ConditionBuilder(condition: ICondition) {
+  protected case class ConditionBuilder(condition: BooleanExpression) {
     def and(other: ConditionBuilder): ConditionBuilder = {
-      val operation = new Operation(Operator.AND, this.condition, other.condition)
+      val operation = new BinaryExpression(Operator.AND, this.condition, other.condition)
       ConditionBuilder(operation)
     }
 
     def or(other: ConditionBuilder): ConditionBuilder = {
-      val operation = new Operation(Operator.OR, this.condition, other.condition)
+      val operation = new BinaryExpression(Operator.OR, this.condition, other.condition)
       ConditionBuilder(operation)
     }
   }
 
   protected object ConditionBuilder {
     def apply(sensor: StructureBuilder, signal: Signal): ConditionBuilder = {
-      val comparison = new Comparison(
+      val predicate = new Predicate(
         getBrickByName(sensor.name).asInstanceOf[Sensor],
         signal.asSignal
       )
-      ConditionBuilder(comparison)
+      ConditionBuilder(predicate)
     }
   }
 
@@ -166,7 +166,7 @@ trait ArduinoML {
     def when(cond: ConditionBuilder): Unit = {
       val trans = new Transition()
       trans.setNext(getStateByName(to.name))
-      trans.setCondition(cond.condition)
+      trans.setBooleanExpression(cond.condition)
       getStateByName(from.name).addTransition(trans)
     }
   }

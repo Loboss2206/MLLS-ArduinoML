@@ -9,11 +9,10 @@
 	<name>GroovuinoML: ArduinoML DSL embeded in Groovy</name>
 
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 		<encoding>UTF-8</encoding>
-		<groovy.version>2.3.10</groovy.version>
-		<groovy.version.short>2.3</groovy.version.short>
+		<groovy.version>4.0.21</groovy.version>
 	</properties>
 
 	<dependencies>
@@ -23,8 +22,8 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
+			<groupId>org.apache.groovy</groupId>
+			<artifactId>groovy</artifactId>
 			<version>${groovy.version}</version>
 		</dependency>
 	</dependencies>
@@ -32,26 +31,27 @@
 		<sourceDirectory>src/main/groovy</sourceDirectory>
 		<plugins>
 			<plugin>
+				<groupId>org.codehaus.gmavenplus</groupId>
+				<artifactId>gmavenplus-plugin</artifactId>
+				<version>1.13.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generateStubs</goal>
+							<goal>compile</goal>
+							<goal>generateTestStubs</goal>
+							<goal>compileTests</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<!-- 2.8.0-01 and later require maven-compiler-plugin 3.1 or higher -->
-				<version>3.1</version>
+				<version>3.8.1</version>
 				<configuration>
-					<compilerId>groovy-eclipse-compiler</compilerId>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.codehaus.groovy</groupId>
-						<artifactId>groovy-eclipse-compiler</artifactId>
-						<version>2.9.1-01</version>
-					</dependency>
-					<!-- for 2.8.0-01 and later you must have an explicit dependency on 
-						groovy-eclipse-batch -->
-					<dependency>
-						<groupId>org.codehaus.groovy</groupId>
-						<artifactId>groovy-eclipse-batch</artifactId>
-						<version>2.3.7-01</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>

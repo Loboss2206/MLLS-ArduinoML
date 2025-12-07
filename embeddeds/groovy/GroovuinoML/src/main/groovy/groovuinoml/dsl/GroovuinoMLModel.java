@@ -16,12 +16,16 @@ public class GroovuinoMLModel {
 	private List<Brick> bricks;
 	private List<State> states;
 	private State initialState;
-	
+	private List<Note> notes;
+	private List<Melody> melodies;
+
 	private Binding binding;
-	
+
 	public GroovuinoMLModel(Binding binding) {
 		this.bricks = new ArrayList<Brick>();
 		this.states = new ArrayList<State>();
+		this.notes = new ArrayList<Note>();
+		this.melodies = new ArrayList<Melody>();
 		this.binding = binding;
 	}
 	
@@ -74,7 +78,31 @@ public class GroovuinoMLModel {
 	public void setInitialState(State state) {
 		this.initialState = state;
 	}
-	
+
+	public void createNote(String name, int frequency, int duration) {
+		Note note = new Note();
+		note.setName(name);
+		note.setFrequency(frequency);
+		note.setDuration(duration);
+		this.notes.add(note);
+		this.binding.setVariable(name, note);
+	}
+
+	public void createMelody(String name, List<Note> noteList) {
+		Melody melody = new Melody();
+		melody.setName(name);
+		melody.setNotes(noteList);
+		this.melodies.add(melody);
+		this.binding.setVariable(name, melody);
+	}
+
+	public NoteAction createNoteAction(Actuator buzzer, Note note) {
+		NoteAction action = new NoteAction();
+		action.setActuator(buzzer);
+		action.setNote(note);
+		return action;
+	}
+
 	@SuppressWarnings("rawtypes")
 	public Object generateCode(String appName) {
 		App app = new App();

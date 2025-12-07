@@ -22,19 +22,25 @@ abstract class GroovuinoMLBasescript extends Script {
 	}
 	
 	// state "name" means actuator becomes signal [and actuator becomes signal]*n
+	// state "name" means play note on buzzer [and ...]*n
 	def state(String name) {
 		List<Action> actions = new ArrayList<Action>()
 		((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createState(name, actions)
 		// recursive closure to allow multiple and statements
 		def closure
-		closure = { actuator -> 
-			[becomes: { signal ->
-				Action action = new Action()
-				action.setActuator(actuator instanceof String ? (Actuator)((GroovuinoMLBinding)this.getBinding()).getVariable(actuator) : (Actuator)actuator)
-				action.setValue(signal instanceof String ? (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signal) : (SIGNAL)signal)
-				actions.add(action)
-				[and: closure]
-			}]
+		closure = { actionOrActuator ->
+			if (actionOrActuator instanceof Action) {
+				actions.add(actionOrActuator)
+				return [and: closure]
+			} else {
+				return [becomes: { signal ->
+					Action action = new Action()
+					action.setActuator(actionOrActuator instanceof String ? (Actuator)((GroovuinoMLBinding)this.getBinding()).getVariable(actionOrActuator) : (Actuator)actionOrActuator)
+					action.setValue(signal instanceof String ? (SIGNAL)((GroovuinoMLBinding)this.getBinding()).getVariable(signal) : (SIGNAL)signal)
+					actions.add(action)
+					[and: closure]
+				}]
+			}
 		}
 		[means: closure]
 	}
@@ -101,6 +107,34 @@ abstract class GroovuinoMLBasescript extends Script {
         }]
     }
 	
+	// note "name" frequency f duration d
+	def note(String name) {
+		[frequency: { freq ->
+			[duration: { dur ->
+				((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createNote(name, freq, dur)
+			}]
+		}]
+	}
+
+	// melody "name" notes [note1, note2, ...]
+	def melody(String name) {
+		[notes: { noteList ->
+			def notes = noteList.collect { noteName ->
+				((GroovuinoMLBinding) this.getBinding()).getVariable(noteName)
+			}
+			((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createMelody(name, notes)
+		}]
+	}
+
+	// play note_name on buzzer_name
+	def play(String noteName) {
+		[on: { buzzerName ->
+			def note = ((GroovuinoMLBinding) this.getBinding()).getVariable(noteName)
+			def buzzer = ((GroovuinoMLBinding) this.getBinding()).getVariable(buzzerName)
+			((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().createNoteAction(buzzer, note)
+		}]
+	}
+
 	// export name
 	def export(String name) {
 		println(((GroovuinoMLBinding) this.getBinding()).getGroovuinoMLModel().generateCode(name).toString())
