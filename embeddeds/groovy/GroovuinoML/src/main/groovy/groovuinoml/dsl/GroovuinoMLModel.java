@@ -9,6 +9,8 @@ import io.github.mosser.arduinoml.kernel.generator.ToWiring;
 import io.github.mosser.arduinoml.kernel.generator.Visitor;
 import io.github.mosser.arduinoml.kernel.structural.Actuator;
 import io.github.mosser.arduinoml.kernel.structural.Brick;
+import io.github.mosser.arduinoml.kernel.structural.Buzzer;
+import io.github.mosser.arduinoml.kernel.structural.LED;
 import io.github.mosser.arduinoml.kernel.structural.SIGNAL;
 import io.github.mosser.arduinoml.kernel.structural.Sensor;
 
@@ -43,6 +45,22 @@ public class GroovuinoMLModel {
 		actuator.setPin(pinNumber);
 		this.bricks.add(actuator);
 		this.binding.setVariable(name, actuator);
+	}
+
+	public void createBuzzer(String name, Integer pinNumber) {
+		Buzzer buzzer = new Buzzer();
+		buzzer.setName(name);
+		buzzer.setPin(pinNumber);
+		this.bricks.add(buzzer);
+		this.binding.setVariable(name, buzzer);
+	}
+
+	public void createLED(String name, Integer pinNumber) {
+		LED led = new LED();
+		led.setName(name);
+		led.setPin(pinNumber);
+		this.bricks.add(led);
+		this.binding.setVariable(name, led);
 	}
 	
 	public void createState(String name, List<Action> actions) {
